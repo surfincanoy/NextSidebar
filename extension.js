@@ -55,7 +55,7 @@ export default class NextSidebarExtension extends Extension {
         this._updateTimezone();
 
         // 侧栏容器：三卡与滑块都挂进侧栏的滚动内容区
-        this._sidebar = new Sidebar();
+        this._sidebar = new Sidebar(this._settings.get_string('sidebar-position'));
         this._container = this._sidebar.content;
 
         // 卡片开关与城市变化需要重建；城市还要立即按新城市拉一次天气。
@@ -67,6 +67,9 @@ export default class NextSidebarExtension extends Extension {
             this._updateTimezone();
             this._fetchWeather();
             this._rebuild();
+        });
+        this._positionChangedId = this._settings.connect('changed::sidebar-position', () => {
+            this._sidebar.setPosition(this._settings.get_string('sidebar-position'));
         });
         this._clockTimerId = GLib.timeout_add_seconds(GLib.PRIORITY_DEFAULT, 1, () => {
             this._tickClock();
@@ -114,6 +117,10 @@ export default class NextSidebarExtension extends Extension {
         if (this._cityChangedId) {
             this._settings.disconnect(this._cityChangedId);
             this._cityChangedId = 0;
+        }
+        if (this._positionChangedId) {
+            this._settings.disconnect(this._positionChangedId);
+            this._positionChangedId = 0;
         }
         this._settings = null;
         if (this._stylesheet) {
