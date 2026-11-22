@@ -29,7 +29,7 @@ GNOME Shell 51 右侧滑出侧栏，自上而下是翻页时钟、天气卡、�
 ## 设置
 
 ```bash
-gnome-extensions prefs nextsidebar@local
+gnome-extensions prefs nextsidebar@github.com
 ```
 
 设置窗口只有城市一组：手工输入任意城市名，或从快捷表选择。快捷表是 `src/cities.js` 的预设城市加上搜索成功过的自定义城市（带归属地副标题，避免重名混淆）；手输城市搜索成功后会自动存进 `custom-cities`，下次直接可选。
@@ -59,15 +59,15 @@ gnome-extensions prefs nextsidebar@local
 重新登录后启用，并可打开设置窗口：
 
 ```bash
-gnome-extensions enable nextsidebar@local
-gnome-extensions prefs nextsidebar@local
+gnome-extensions enable nextsidebar@github.com
+gnome-extensions prefs nextsidebar@github.com
 ```
 
 卸载：先停用，再删除扩展目录。
 
 ```bash
-gnome-extensions disable nextsidebar@local
-rm -rf ~/.local/share/gnome-shell/extensions/nextsidebar@local
+gnome-extensions disable nextsidebar@github.com
+rm -rf ~/.local/share/gnome-shell/extensions/nextsidebar@github.com
 ```
 
 ## 文件

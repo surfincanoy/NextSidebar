@@ -1,9 +1,9 @@
 {
     "name": "NextSidebar",
     "description": "GNOME 侧边栏插件：玻璃时钟 / 天气 / 月历卡片与音量、麦克风、亮度滑块，样式沿用 NextKde 风格",
-    "uuid": "nextsidebar@local",
+    "uuid": "nextsidebar@github.com",
     "shell-version": ["51"],
     "version": 1,
-    "url": "",
+    "url": "https://github.com/surfincanoy/NextSidebar",
     "settings-schema": "org.gnome.shell.extensions.nextsidebar"
 }
