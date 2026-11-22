@@ -1,4 +1,4 @@
-// 扩展设置窗口：城市（预设 + 手输保存的自定义城市）。
+// 扩展设置窗口：侧边栏位置与城市（预设 + 手输保存的自定义城市）。
 import Adw from 'gi://Adw';
 import Gio from 'gi://Gio';
 import Gtk from 'gi://Gtk';
