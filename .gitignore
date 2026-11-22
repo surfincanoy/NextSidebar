@@ -1,0 +1,9 @@
+# GSettings schema 编译产物（由 install.sh 在目标目录生成）
+*.compiled
+schemas/gschemas.compiled
+
+# 编辑器与系统临时文件
+*.swp
+*~
+.DS_Store
+__pycache__/

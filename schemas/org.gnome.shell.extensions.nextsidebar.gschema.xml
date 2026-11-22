@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schemalist>
+  <schema id="org.gnome.shell.extensions.nextsidebar"
+          path="/org/gnome/shell/extensions/nextsidebar/">
+    <key name="toggle-sidebar" type="as">
+      <default><![CDATA[['<Super>backslash']]]></default>
+      <summary>开合侧边栏的快捷键</summary>
+      <description>显示或隐藏 NextSidebar 的键盘快捷键，可用 gsettings 修改。</description>
+    </key>
+    <key name="show-clock" type="b">
+      <default>true</default>
+      <summary>显示时钟卡片</summary>
+      <description>是否在侧边栏中显示时钟表盘卡片。</description>
+    </key>
+    <key name="show-calendar" type="b">
+      <default>true</default>
+      <summary>显示日历卡片</summary>
+      <description>是否在侧边栏中显示月历卡片。</description>
+    </key>
+    <key name="show-weather" type="b">
+      <default>true</default>
+      <summary>显示天气卡片</summary>
+      <description>是否在侧边栏中显示天气卡片。</description>
+    </key>
+    <key name="city" type="s">
+      <default>'苏州'</default>
+      <summary>城市名称</summary>
+      <description>天气查询的城市，预设城市同时决定时钟时区。</description>
+    </key>
+    <key name="custom-cities" type="as">
+      <default>[]</default>
+      <summary>自定义城市</summary>
+      <description>手工输入并搜索成功的城市，每项为含名称、时区偏移与归属地的 JSON 字符串。</description>
+    </key>
+  </schema>
+</schemalist>

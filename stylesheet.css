@@ -1,0 +1,215 @@
+/* NextSidebar：卡片与滑块格用强调色半透明玻璃底——壳透明后壁纸透上来，
+   底色比纯淡底稍实以撑住文字对比度，细边框做玻璃边缘、柔和阴影做悬浮感。
+   St 不支持背景模糊，玻璃质感由这三者近似；不设 color，文字继承主题前景色 */
+.dw-card {
+    border-radius: 20px;
+    background-color: st-transparentize(-st-accent-color, 0.82);
+    border: 1px solid st-transparentize(-st-accent-color, 0.55);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.28);
+    padding: 16px;
+}
+
+/* 翻页时钟：4 位数字与冒号，颜色继承主题前景色；数字字号对齐半片总高（2×42px） */
+.ns-flipclock {
+    spacing: 4px;
+}
+
+.ns-flip-digit {
+    font-family: monospace;
+    font-size: 84px;
+    font-weight: bold;
+}
+
+.ns-flip-colon {
+    font-family: monospace;
+    font-size: 64px;
+}
+
+/* 翻页页片实体底色：上半稍亮、下半稍暗，强调色派生跟随明暗与强调色，
+   数字继承前景色叠在底上，才有「页片」而非「透明背景上的字」的感觉 */
+.ns-flip-half-upper {
+    background-color: st-transparentize(-st-accent-color, 0.8);
+    border-radius: 6px 6px 0 0;
+}
+
+.ns-flip-half-lower {
+    background-color: st-transparentize(-st-accent-color, 0.88);
+    border-radius: 0 0 6px 6px;
+}
+
+/* 翻页卡片中缝与铰钉：把上下半从视觉上分成两张机械翻页 */
+.ns-flip-divider {
+    background-color: #0a0a0a;
+}
+
+.ns-flip-divider-hi {
+    background-color: rgba(255, 255, 255, 0.12);
+}
+
+.ns-flip-hinge {
+    background-color: #3a3a3a;
+    border-radius: 99px;
+}
+
+/* 弱化文字用 opacity，保留层级的同时继续跟随主题前景色 */
+.dw-title {
+    font-size: 12px;
+    font-weight: bold;
+    opacity: 0.62;
+}
+
+.dw-cal-title {
+    font-size: 16px;
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+.dw-cal-weekrow {
+    margin-bottom: 8px;
+}
+
+.dw-cal-weekday {
+    font-size: 14px;
+    opacity: 0.55;
+}
+
+.dw-cal-day {
+    font-size: 16px;
+}
+
+/* 非本月日期的淡化走 JS 的 actor.opacity：St 的 CSS 引擎不支持 opacity 属性 */
+.dw-cal-day-dim {
+    font-size: 16px;
+}
+
+/* 农历小字：公历数字下方一行，继承主题前景色，不写死颜色 */
+.dw-cal-lunar {
+    font-size: 9px;
+    opacity: 0.7;
+}
+
+/* 非本月的农历行：淡化走 JS 的 actor.opacity（比公历浅，小字才看得清）；St 不支持 CSS opacity */
+.dw-cal-lunar-dim {
+    /* 仅作标记类，淡化值在 extension.js::_tickCalendar 中设置 */
+}
+
+/* 今天高亮落在整格容器上，公历与农历两行一起继承白字；仍是唯一保留白字的场景 */
+.dw-cal-today {
+    color: #ffffff;
+    background-color: #ee7659;
+    border-radius: 10px;
+}
+
+/* 今天的公历数字加粗，不另写白字 */
+.dw-cal-today .dw-cal-day {
+    font-weight: bold;
+}
+
+.dw-weather-icon {
+    width: 56px;
+    height: 56px;
+}
+
+.dw-weather-condition {
+    font-size: 16px;
+    font-weight: bold;
+}
+
+.dw-weather-temp-row {
+    margin-top: 6px;
+}
+
+.dw-weather-temp {
+    font-size: 110px;
+    font-weight: bold;
+}
+
+.dw-weather-unit {
+    font-size: 40px;
+    font-weight: bold;
+    margin-left: 2px;
+}
+
+.dw-weather-feels-row {
+    margin-top: 2px;
+}
+
+.dw-weather-feels {
+    font-size: 25px;
+    opacity: 0.85;
+}
+
+.dw-weather-feels-prefix {
+    margin-right: 4px;
+}
+
+.dw-weather-range-row {
+    margin-top: 8px;
+}
+
+.dw-weather-range {
+    font-size: 18px;
+    opacity: 0.85;
+}
+
+.dw-weather-range-sep {
+    margin-left: 4px;
+}
+
+.dw-weather-unit-small {
+    font-size: 12px;
+    opacity: 0.85;
+    margin-left: 1px;
+}
+
+/* 侧栏外壳：保留 popup-menu-content 以继承跟随明暗的前景/文字色，
+   但把底色设为透明，让桌面壁纸透上来；圆角、内边距、阴影、边框全部去掉 */
+.next-sidebar {
+    background-color: transparent;
+    border-radius: 0;
+    padding: 0;
+    box-shadow: none;
+    border: none;
+}
+
+/* 侧栏滚动内容区：主题条、卡片与滑块竖向排列、等间距 */
+.next-sidebar-content {
+    padding: 16px;
+    spacing: 12px;
+}
+
+/* 侧栏顶部主题条：三档按钮，高亮档位用强调色淡底，随系统明暗与强调色变化 */
+/* 滑块组与单格：底色用强调色透明化，跟随系统明暗与强调色 */
+.ns-slider-group {
+    spacing: 10px;
+}
+
+.ns-slider-section {
+    background-color: st-transparentize(-st-accent-color, 0.82);
+    border: 1px solid st-transparentize(-st-accent-color, 0.55);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.28);
+    border-radius: 12px;
+    padding: 14px 16px;
+    spacing: 10px;
+}
+
+.ns-slider-header {
+    spacing: 10px;
+}
+
+.ns-slider-label {
+    font-size: 10pt;
+}
+
+.ns-slider-perc {
+    font-size: 9pt;
+}
+
+/* Cairo 无法直接读 CSS 颜色，用隐藏 probe 把强调色挂在标准属性上供绘制读取 */
+.ns-slider-track {
+    height: 22px;
+}
+
+.ns-slider-accent {
+    background-color: -st-accent-color;
+}
