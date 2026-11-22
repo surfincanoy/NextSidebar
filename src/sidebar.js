@@ -1,4 +1,4 @@
-// 右侧滑出侧栏容器：用 addChrome 挂遮罩与外壳，外壳带 popup-menu-content 跟随系统明暗主题。
+// 侧边滑出侧栏容器：用 addChrome 挂遮罩与外壳，外壳带 popup-menu-content 跟随系统明暗主题。
 // 卡片本体视觉不变，主题跟随只作用于外壳与其中的滑块。
 import GLib from 'gi://GLib';
 import St from 'gi://St';
@@ -6,11 +6,15 @@ import Clutter from 'gi://Clutter';
 import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 
 import { HoverTrigger } from './hover-trigger.js';
+import {
+    SIDEBAR_WIDTH, EDGE_WIDTH, POSITIONS, normalizePosition,
+    edgeX, shellX, slideInX, shellTranslation,
+} from './sidebar-geometry.js';
 
-export const SIDEBAR_WIDTH = 360;
+export { SIDEBAR_WIDTH, EDGE_WIDTH } from './sidebar-geometry.js';
+
 export const ANIM_DURATION = 250;
-// 右边缘触发条：宽 6px、鼠标停留 250ms 弹出；离开侧栏 5 秒后自动收起
-export const EDGE_WIDTH = 6;
+// 边缘触发条：宽 6px、鼠标停留 250ms 弹出；离开侧栏 5 秒后自动收起
 export const EDGE_DWELL_MS = 250;
 export const AUTO_HIDE_MS = 5000;
 
@@ -26,7 +30,8 @@ function cancel(id) {
 }
 
 export class Sidebar {
-    constructor() {
+    constructor(position = 'right') {
+        this._position = normalizePosition(position);
         this._open = false;
         this._hover = new HoverTrigger({
             dwellMs: EDGE_DWELL_MS,
@@ -63,26 +68,42 @@ export class Sidebar {
         this._hover.cancelAll();
 
         // 每次 show 重读当前主显示器几何，处理多屏与显示器变更
-        const monitor = this._getMonitor();
-        const panelH = Main.panel.height;
-        // 触发条同样跟随当前主显示器
-        this._edge.set_position(monitor.x + monitor.width - EDGE_WIDTH, monitor.y + panelH);
-        this._edge.set_size(EDGE_WIDTH, monitor.height - panelH);
-        this._overlay.set_position(monitor.x, monitor.y);
-        this._overlay.set_size(monitor.width, monitor.height);
+        this._updateGeometry();
         this._overlay.show();
 
-        this._shell.set_position(monitor.x + monitor.width, monitor.y + panelH);
-        this._shell.set_size(SIDEBAR_WIDTH, monitor.height - panelH);
+        this._shell.remove_all_transitions();
+        this._shell.translation_x = 0;
         this._shell.show();
         Main.layoutManager.uiGroup.set_child_above_sibling(this._shell, this._overlay);
 
-        this._shell.remove_all_transitions();
         this._shell.ease({
-            translation_x: -SIDEBAR_WIDTH,
+            translation_x: slideInX(this._position),
             duration: ANIM_DURATION,
             mode: Clutter.AnimationMode.EASE_OUT_QUAD,
         });
+    }
+
+    // 切边即时生效：已打开时完整落在新侧，关闭时仍隐藏，并清掉悬停定时器
+    setPosition(position) {
+        const next = normalizePosition(position);
+        if (next === this._position) return;
+        this._position = next;
+        this._hover?.cancelAll();
+        this._updateGeometry();
+        this._shell.remove_all_transitions();
+        this._shell.translation_x = shellTranslation(this._position, this._open);
+    }
+
+    // 只同步边缘、遮罩与外壳的位置尺寸，不碰外壳的滑入偏移
+    _updateGeometry() {
+        const monitor = this._getMonitor();
+        const panelH = Main.panel.height;
+        this._edge.set_position(edgeX(monitor, this._position), monitor.y + panelH);
+        this._edge.set_size(EDGE_WIDTH, monitor.height - panelH);
+        this._overlay.set_position(monitor.x, monitor.y);
+        this._overlay.set_size(monitor.width, monitor.height);
+        this._shell.set_position(shellX(monitor, this._position), monitor.y + panelH);
+        this._shell.set_size(SIDEBAR_WIDTH, monitor.height - panelH);
     }
 
     hide() {
@@ -134,14 +155,14 @@ export class Sidebar {
             { x: 0, y: 0, width: 1920, height: 1080 };
     }
 
-    // 右边缘窄触发条：透明但可响应鼠标，贴在主显示器右侧（面板下方）
+    // 对应边缘的窄触发条：透明但可响应鼠标，贴在主显示器选定的那一侧（面板下方）
     _buildEdge() {
         const monitor = this._getMonitor();
         const panelH = Main.panel.height;
         this._edge = new St.Widget({
             reactive: true,
             opacity: 0,
-            x: monitor.x + monitor.width - EDGE_WIDTH,
+            x: edgeX(monitor, this._position),
             y: monitor.y + panelH,
             width: EDGE_WIDTH,
             height: monitor.height - panelH,
@@ -203,7 +224,7 @@ export class Sidebar {
             visible: false,
             width: SIDEBAR_WIDTH,
             height: monitor.height - panelH,
-            x: monitor.x + monitor.width,
+            x: shellX(monitor, this._position),
             y: monitor.y + panelH,
         });
 
