@@ -116,6 +116,20 @@ class DigitUnit {
         this._flipTimers = [];
     }
 
+    // 释放本单元持有的 actor：外层 FlipClock 销毁 BoxLayout 会连带销毁子节点，
+    // 这里显式 destroy 并置空引用，避免 GJS 持有已销毁 actor 的强引用（EGO-L-002/005）。
+    destroy() {
+        this.cancelFlip();
+        if (this.actor) {
+            this.actor.destroy();
+            this.actor = null;
+        }
+        this._upperStatic = null;
+        this._lowerStatic = null;
+        this._fold = null;
+        this._unfold = null;
+    }
+
     flip(from, to) {
         this.cancelFlip();
         // 经典两段式：上半旧数字先翻下，露出新上半；下半新数字再翻上来盖住旧下半。
@@ -199,7 +213,9 @@ export class FlipClock {
     }
 
     destroy() {
-        for (const unit of this._units) unit.cancelFlip();
+        for (const unit of this._units ?? []) unit.destroy();
+        this._units = [];
+        this._digits = [];
         if (this.actor) {
             this.actor.destroy();
             this.actor = null;

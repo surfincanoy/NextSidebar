@@ -52,23 +52,22 @@ export default class NextSidebarExtension extends Extension {
         this._themeChangedId = this._themeContext.connect('changed', () => this._reapplyStylesheet());
 
         this._settings = this.getSettings();
-        this._settingIds = [];
         this._updateTimezone();
 
         // 侧栏容器：三卡与滑块都挂进侧栏的滚动内容区
         this._sidebar = new Sidebar();
         this._container = this._sidebar.content;
 
-        // 卡片开关与城市变化需要重建；城市还要立即按新城市拉一次天气
-        for (const key of ['show-clock', 'show-calendar', 'show-weather', 'city']) {
-            this._settingIds.push(this._settings.connect(`changed::${key}`, () => {
-                if (key === 'city') {
-                    this._updateTimezone();
-                    this._fetchWeather();
-                }
-                this._rebuild();
-            }));
-        }
+        // 卡片开关与城市变化需要重建；城市还要立即按新城市拉一次天气。
+        // 每个 id 存为独立字段，disable() 再用同一个字段逐个 disconnect（GJS 信号生命周期）。
+        this._showClockId = this._settings.connect('changed::show-clock', () => this._rebuild());
+        this._showCalendarId = this._settings.connect('changed::show-calendar', () => this._rebuild());
+        this._showWeatherId = this._settings.connect('changed::show-weather', () => this._rebuild());
+        this._cityChangedId = this._settings.connect('changed::city', () => {
+            this._updateTimezone();
+            this._fetchWeather();
+            this._rebuild();
+        });
         this._clockTimerId = GLib.timeout_add_seconds(GLib.PRIORITY_DEFAULT, 1, () => {
             this._tickClock();
             return GLib.SOURCE_CONTINUE;
@@ -100,10 +99,22 @@ export default class NextSidebarExtension extends Extension {
             GLib.source_remove(this._weatherTimerId);
             this._weatherTimerId = 0;
         }
-        for (const id of this._settingIds ?? []) {
-            this._settings.disconnect(id);
+        if (this._showClockId) {
+            this._settings.disconnect(this._showClockId);
+            this._showClockId = 0;
         }
-        this._settingIds = [];
+        if (this._showCalendarId) {
+            this._settings.disconnect(this._showCalendarId);
+            this._showCalendarId = 0;
+        }
+        if (this._showWeatherId) {
+            this._settings.disconnect(this._showWeatherId);
+            this._showWeatherId = 0;
+        }
+        if (this._cityChangedId) {
+            this._settings.disconnect(this._cityChangedId);
+            this._cityChangedId = 0;
+        }
         this._settings = null;
         if (this._stylesheet) {
             this._theme.unload_stylesheet(this._stylesheet);
@@ -141,15 +152,27 @@ export default class NextSidebarExtension extends Extension {
     }
 
     _clearCardRefs() {
+        // 先停掉翻页钟的定时器并释放其 actor，避免回调打到已销毁对象
+        if (this._flipClock) {
+            this._flipClock.destroy();
+            this._flipClock = null;
+        }
+        // 显式销毁仍被引用的子 actor 再置空（Clutter destroy 幂等）
+        if (this._calGrid) {
+            this._calGrid.destroy();
+            this._calGrid = null;
+        }
+        if (this._weatherIconBox) {
+            this._weatherIconBox.destroy();
+            this._weatherIconBox = null;
+        }
         this._flipClock = null;
         this._calTitle = null;
-        this._calGrid = null;
         this._weatherTemp = null;
         this._weatherCondition = null;
         this._weatherFeels = null;
         this._weatherRangeNight = null;
         this._weatherRangeDay = null;
-        this._weatherIconBox = null;
         this._clockCard = null;
         this._calendarCard = null;
         this._weatherCard = null;
@@ -167,11 +190,13 @@ export default class NextSidebarExtension extends Extension {
     }
 
     _rebuild() {
-        // 侧栏 content 是长期存在的容器，重建时先销毁其中的旧卡片再清空引用
-        for (const card of [this._clockCard, this._weatherCard, this._calendarCard]) {
+        // 先释放卡片内的活动对象（翻页定时器、子 actor），再销毁旧卡片容器。
+        // 侧栏 content 是长期存在的容器，卡片本身随重建被替换。
+        const oldCards = [this._clockCard, this._weatherCard, this._calendarCard];
+        this._clearCardRefs();
+        for (const card of oldCards) {
             if (card) card.destroy();
         }
-        this._clearCardRefs();
 
         // 自上而下：时钟 → 天气 → 月历
         if (this._settings.get_boolean('show-clock'))

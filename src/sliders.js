@@ -166,11 +166,28 @@ class SliderRow {
     }
 
     destroy() {
-        this._slider.destroy();
-        for (const [obj, id] of this._signals) {
+        // 先断开外部对象（如 MixerControl）上的信号，再销毁本行持有的 actor
+        for (const [obj, id] of this._signals ?? []) {
             try { obj.disconnect(id); } catch (e) { /* 忽略已销毁对象 */ }
         }
         this._signals = [];
+        if (this._slider) {
+            this._slider.destroy();
+            this._slider = null;
+        }
+        // header 里的图标/标签/百分比随 actor 连带销毁，这里显式 destroy 并置空引用
+        if (this._icon) {
+            this._icon.destroy();
+            this._icon = null;
+        }
+        if (this._perc) {
+            this._perc.destroy();
+            this._perc = null;
+        }
+        if (this.actor) {
+            this.actor.destroy();
+            this.actor = null;
+        }
     }
 
     _connect(obj, signal, handler) {
