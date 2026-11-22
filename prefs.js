@@ -7,6 +7,7 @@ import { ExtensionPreferences, gettext as _ } from 'resource:///org/gnome/Shell/
 
 import { PRESET_CITIES } from './src/cities.js';
 import { parseCustomCities } from './src/custom-cities.js';
+import { POSITIONS } from './src/sidebar-geometry.js';
 
 export default class NextSidebarPreferences extends ExtensionPreferences {
     fillPreferencesWindow(window) {
@@ -19,6 +20,7 @@ export default class NextSidebarPreferences extends ExtensionPreferences {
         window.set_default_size(440, 520);
 
         this._addCityRows(page, settings);
+        this._addPositionRows(page, settings);
     }
 
     _addCityRows(page, settings) {
@@ -65,6 +67,32 @@ export default class NextSidebarPreferences extends ExtensionPreferences {
             const name = names[combo.selected];
             if (name)
                 settings.set_string('city', name);
+        });
+    }
+
+    _addPositionRows(page, settings) {
+        const group = new Adw.PreferencesGroup({
+            title: _('侧边栏位置'),
+            description: _('选择侧栏从屏幕左侧或右侧滑出'),
+        });
+        page.add(group);
+
+        const combo = new Adw.ComboRow({ title: _('滑出方向') });
+        combo.model = Gtk.StringList.new([_('右侧'), _('左侧')]);
+        group.add(combo);
+
+        // 刷新选中项会触发 notify::selected，期间不能回写设置
+        let updating = false;
+        const refresh = () => {
+            updating = true;
+            combo.selected = Math.max(0, POSITIONS.indexOf(settings.get_string('sidebar-position')));
+            updating = false;
+        };
+        refresh();
+        settings.connect('changed::sidebar-position', refresh);
+        combo.connect('notify::selected', () => {
+            if (updating) return;
+            settings.set_string('sidebar-position', POSITIONS[combo.selected] ?? 'right');
         });
     }
 }
