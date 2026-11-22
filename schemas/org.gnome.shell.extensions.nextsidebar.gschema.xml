@@ -22,6 +22,15 @@
       <summary>显示天气卡片</summary>
       <description>是否在侧边栏中显示天气卡片。</description>
     </key>
+    <key name="sidebar-position" type="s">
+      <default>'right'</default>
+      <choices>
+        <choice value='left'/>
+        <choice value='right'/>
+      </choices>
+      <summary>侧边栏位置</summary>
+      <description>侧边栏从主显示器左侧或右侧滑出。</description>
+    </key>
     <key name="city" type="s">
       <default>'苏州'</default>
       <summary>城市名称</summary>
