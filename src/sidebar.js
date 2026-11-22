@@ -8,7 +8,8 @@ import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 import { HoverTrigger } from './hover-trigger.js';
 import {
     SIDEBAR_WIDTH, EDGE_WIDTH, POSITIONS, normalizePosition,
-    edgeX, shellX, slideInX, shellTranslation,
+    edgeX, edgeGeometry, shellX, slideInX, shellTranslation, monitorFromRuntime,
+    followMonitorChanges,
 } from './sidebar-geometry.js';
 
 export { SIDEBAR_WIDTH, EDGE_WIDTH } from './sidebar-geometry.js';
@@ -46,6 +47,11 @@ export class Sidebar {
         this._buildOverlay();
         this._buildShell();
         this._connectHoverSignals();
+        // 显示器插拔 / 分辨率变化后重算触发条，避免中段区域留在旧坐标
+        this._disconnectMonitorsChanged = followMonitorChanges(
+            Main.layoutManager,
+            () => this._updateGeometry(),
+        );
     }
 
     get content() {
@@ -98,8 +104,9 @@ export class Sidebar {
     _updateGeometry() {
         const monitor = this._getMonitor();
         const panelH = Main.panel.height;
-        this._edge.set_position(edgeX(monitor, this._position), monitor.y + panelH);
-        this._edge.set_size(EDGE_WIDTH, monitor.height - panelH);
+        const edge = edgeGeometry(monitor, panelH);
+        this._edge.set_position(edgeX(monitor, this._position), edge.y);
+        this._edge.set_size(EDGE_WIDTH, edge.height);
         this._overlay.set_position(monitor.x, monitor.y);
         this._overlay.set_size(monitor.width, monitor.height);
         this._shell.set_position(shellX(monitor, this._position), monitor.y + panelH);
@@ -124,6 +131,8 @@ export class Sidebar {
 
     destroy() {
         this._open = false;
+        this._disconnectMonitorsChanged?.();
+        this._disconnectMonitorsChanged = null;
         this._hover?.destroy();
         this._hover = null;
         if (this._edge) {
@@ -148,24 +157,26 @@ export class Sidebar {
         this._content = null;
     }
 
-    // primaryMonitor 可能在启动早期或多屏嵌套会话里为空，回退到固定几何避免崩溃
+    // 优先取真实显示器几何；启动早期拿不到时才回退到固定几何避免崩溃
     _getMonitor() {
-        return Main.layoutManager.primaryMonitor ??
-            Main.layoutManager.monitors[0] ??
-            { x: 0, y: 0, width: 1920, height: 1080 };
+        const display = typeof global !== 'undefined' ? global.display : null;
+        return monitorFromRuntime(Main.layoutManager, display, {
+            x: 0, y: 0, width: 1920, height: 1080,
+        });
     }
 
     // 对应边缘的窄触发条：透明但可响应鼠标，贴在主显示器选定的那一侧（面板下方）
     _buildEdge() {
         const monitor = this._getMonitor();
         const panelH = Main.panel.height;
+        const edge = edgeGeometry(monitor, panelH);
         this._edge = new St.Widget({
             reactive: true,
             opacity: 0,
             x: edgeX(monitor, this._position),
-            y: monitor.y + panelH,
+            y: edge.y,
             width: EDGE_WIDTH,
-            height: monitor.height - panelH,
+            height: edge.height,
         });
         Main.layoutManager.addChrome(this._edge, {
             affectsStruts: false,
