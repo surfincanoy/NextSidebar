@@ -3,7 +3,6 @@
     "description": "GNOME Shell extension with a glass clock, weather and monthly calendar cards, plus volume, microphone and brightness sliders — styled after NextKde.",
     "uuid": "nextsidebar@github.com",
     "shell-version": ["51"],
-    "version": 1,
     "url": "https://github.com/surfincanoy/NextSidebar",
     "settings-schema": "org.gnome.shell.extensions.nextsidebar"
 }

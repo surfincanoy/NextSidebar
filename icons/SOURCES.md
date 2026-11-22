@@ -2,6 +2,7 @@
 
 本目录的彩色天气 PNG 来自 [Breezy Weather](https://github.com/breezy-weather/breezy-weather) 项目，
 取自其 `app/src/main/res/drawable/` 目录，按原文件名复制，仅用于本桌面扩展的天气卡片。
+上游许可证为 GNU Lesser General Public License v3.0（LGPL-3.0），与 GPL-3.0 兼容；此处保留来源与归属说明。
 
 - 上游仓库：https://github.com/breezy-weather/breezy-weather
 - 固定提交：`7619882ee977e9269560da475eb321f747bcdd86`（`main` 分支，2026-11-20 取用）

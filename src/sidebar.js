@@ -159,8 +159,7 @@ export class Sidebar {
 
     // 优先取真实显示器几何；启动早期拿不到时才回退到固定几何避免崩溃
     _getMonitor() {
-        const display = typeof global !== 'undefined' ? global.display : null;
-        return monitorFromRuntime(Main.layoutManager, display, {
+        return monitorFromRuntime(Main.layoutManager, global.display, {
             x: 0, y: 0, width: 1920, height: 1080,
         });
     }

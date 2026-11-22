@@ -46,53 +46,40 @@ function normalizeRect(rect) {
     return { x: rect.x, y: rect.y, width: rect.width, height: rect.height };
 }
 
-function geometryFromDisplay(display) {
-    if (!display || typeof display.get_monitor_geometry !== 'function')
-        return null;
-
-    let primaryIndex = 0;
+function displayGeometry(display, index) {
     try {
-        if (typeof display.get_primary_monitor === 'function') {
-            const index = display.get_primary_monitor();
-            if (Number.isInteger(index) && index >= 0)
-                primaryIndex = index;
-        }
+        return normalizeRect(display.get_monitor_geometry(index));
     } catch (e) {
-        primaryIndex = 0;
+        // 无效索引或显示器尚未就绪时继续尝试 0 号
+        return null;
     }
+}
 
-    for (const index of [primaryIndex, 0]) {
-        try {
-            const rect = normalizeRect(display.get_monitor_geometry(index));
-            if (rect)
-                return rect;
-        } catch (e) {
-            // 索引无效时继续尝试 0 号显示器
-        }
+function geometryFromDisplay(display) {
+    try {
+        const index = display.get_primary_monitor();
+        const primaryIndex = index >= 0 ? index : 0;
+        return displayGeometry(display, primaryIndex) ?? displayGeometry(display, 0);
+    } catch (e) {
+        // 启动早期 Meta.Display 可能尚未就绪，交给硬编码兜底几何
+        return null;
     }
-    return null;
 }
 
 // 运行时按优先级取真实显示器几何：layoutManager 主显示器 → 第一块显示器 →
 // Meta.Display 几何；都拿不到才用调用方的硬编码兜底。
 export function monitorFromRuntime(layoutManager, display, fallback) {
     return pickMonitor([
-        layoutManager?.primaryMonitor,
-        layoutManager?.monitors?.[0],
+        layoutManager.primaryMonitor,
+        layoutManager.monitors[0],
         geometryFromDisplay(display),
     ], fallback);
 }
 
-// 订阅显示器变化；返回的解绑函数在没有 layoutManager / disconnect 时也安全。
+// 订阅显示器变化，返回的解绑函数在 destroy() 中调用。
 export function followMonitorChanges(layoutManager, onChanged) {
-    if (!layoutManager || typeof layoutManager.connect !== 'function')
-        return () => {};
-
     const id = layoutManager.connect('monitors-changed', onChanged);
-    return () => {
-        if (typeof layoutManager.disconnect === 'function')
-            layoutManager.disconnect(id);
-    };
+    return () => layoutManager.disconnect(id);
 }
 
 export function shellX(monitor, position) {

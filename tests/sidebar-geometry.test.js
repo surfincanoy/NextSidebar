@@ -68,18 +68,17 @@ test('显示器几何按运行时优先级读取，全部拿不到再兜底', ()
     assert.deepEqual(monitorFromRuntime({ primaryMonitor: primary, monitors: [first] }, display, fallback), primary);
     assert.deepEqual(monitorFromRuntime({ primaryMonitor: null, monitors: [first] }, display, fallback), first);
     assert.deepEqual(monitorFromRuntime({ primaryMonitor: null, monitors: [] }, display, fallback), displayRect);
-    assert.deepEqual(monitorFromRuntime({}, null, fallback), fallback);
-    assert.deepEqual(monitorFromRuntime({}, {
+    assert.deepEqual(monitorFromRuntime({ primaryMonitor: null, monitors: [] }, {
         get_primary_monitor: () => -1,
         get_monitor_geometry: (index) => (index === 0 ? displayRect : null),
     }, fallback), displayRect);
 
     const secondRect = { x: 300, y: 20, width: 1920, height: 1080 };
-    assert.deepEqual(monitorFromRuntime({}, {
+    assert.deepEqual(monitorFromRuntime({ primaryMonitor: null, monitors: [] }, {
         get_primary_monitor: () => 1,
         get_monitor_geometry: (index) => (index === 1 ? secondRect : null),
     }, fallback), secondRect);
-    assert.deepEqual(monitorFromRuntime({}, {
+    assert.deepEqual(monitorFromRuntime({ primaryMonitor: null, monitors: [] }, {
         get_primary_monitor: () => 1,
         get_monitor_geometry: (index) => {
             if (index === 1)
@@ -100,12 +99,12 @@ test('显示器 API 异常时不崩溃，回退到兜底几何', () => {
         },
     };
 
-    assert.deepEqual(monitorFromRuntime({}, brokenDisplay, fallback), fallback);
+    assert.deepEqual(monitorFromRuntime({ primaryMonitor: null, monitors: [] }, brokenDisplay, fallback), fallback);
 });
 
 test('显示器几何坐标非有限值时跳过', () => {
     const fallback = { x: 0, y: 0, width: 1920, height: 1080 };
-    assert.deepEqual(monitorFromRuntime({}, {
+    assert.deepEqual(monitorFromRuntime({ primaryMonitor: null, monitors: [] }, {
         get_primary_monitor: () => 0,
         get_monitor_geometry: () => ({ x: NaN, y: 0, width: 1920, height: 1080 }),
     }, fallback), fallback);
@@ -135,10 +134,6 @@ test('显示器变化时可订阅刷新并可安全解绑', () => {
     assert.equal(refreshCount, 1);
     dispose();
     assert.equal(disconnectCount, 1);
-
-    const noop = followMonitorChanges(null, () => {});
-    assert.equal(typeof noop, 'function');
-    assert.doesNotThrow(() => noop());
 });
 
 test('外壳闭合位置在主显示器外', () => {

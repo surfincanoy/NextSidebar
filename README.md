@@ -70,6 +70,10 @@ gnome-extensions disable nextsidebar@github.com
 rm -rf ~/.local/share/gnome-shell/extensions/nextsidebar@github.com
 ```
 
+## 许可证
+
+本扩展以 GPL-3.0 发布，见 `LICENSE`。天气图标来自 Breezy Weather（LGPL-3.0），来源与归属见 `icons/SOURCES.md`。
+
 ## 文件
 
 - `extension.js`：扩展入口，侧栏挂载、三卡 UI、设置接线、快捷键与主题重挂。
