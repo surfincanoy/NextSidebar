@@ -4,6 +4,7 @@ import St from 'gi://St';
 import Clutter from 'gi://Clutter';
 import Gvc from 'gi://Gvc';
 import * as Main from 'resource:///org/gnome/shell/ui/main.js';
+import { volumeRatio, setStreamVolume, watchDefaultStream } from './audio-stream.js';
 
 const BAR_H = 6;
 const RADIUS = 3;
@@ -198,9 +199,19 @@ class VolumeRow extends SliderRow {
     constructor(mixer) {
         super({ iconName: 'audio-volume-medium-symbolic', title: '音量' });
         this._mixer = mixer;
-        this._connect(mixer, 'state-changed', () => this.refresh());
-        this._connect(mixer, 'default-sink-changed', () => this.refresh());
-        this.refresh();
+        this._watch = watchDefaultStream(
+            mixer,
+            'default-sink-changed',
+            () => mixer.get_state() === Gvc.MixerControlState.READY
+                ? mixer.get_default_sink() : null,
+            () => this.refresh()
+        );
+        this._connect(mixer, 'state-changed', () => this._watch.sync());
+    }
+
+    destroy() {
+        this._watch.dispose();
+        super.destroy();
     }
 
     refresh() {
@@ -210,16 +221,14 @@ class VolumeRow extends SliderRow {
             return;
         }
         const sink = this._mixer.get_default_sink();
-        const ratio = Math.min(sink.volume / this._mixer.get_vol_max_norm(), 1.0);
-        this.setValue(ratio, sink.is_muted);
+        this.setValue(volumeRatio(sink, this._mixer.get_vol_max_norm()), sink.is_muted);
     }
 
     _onChange(v) {
         const sink = this._mixer?.get_default_sink();
-        if (!sink) return;
-        sink.volume = v * this._mixer.get_vol_max_norm();
-        sink.push_volume();
-        this.setValue(v, false);
+        if (!sink || this._mixer.get_state() !== Gvc.MixerControlState.READY) return;
+        setStreamVolume(sink, this._mixer.get_vol_max_norm(), v);
+        // 不在这里本地改 UI：流音量变化通知会回调 refresh()，以 PA 回读值为准
     }
 
     _updateIcon(v, muted) {
@@ -236,9 +245,19 @@ class MicRow extends SliderRow {
     constructor(mixer) {
         super({ iconName: 'audio-input-microphone-symbolic', title: '麦克风' });
         this._mixer = mixer;
-        this._connect(mixer, 'state-changed', () => this.refresh());
-        this._connect(mixer, 'default-source-changed', () => this.refresh());
-        this.refresh();
+        this._watch = watchDefaultStream(
+            mixer,
+            'default-source-changed',
+            () => mixer.get_state() === Gvc.MixerControlState.READY
+                ? mixer.get_default_source() : null,
+            () => this.refresh()
+        );
+        this._connect(mixer, 'state-changed', () => this._watch.sync());
+    }
+
+    destroy() {
+        this._watch.dispose();
+        super.destroy();
     }
 
     refresh() {
@@ -248,15 +267,14 @@ class MicRow extends SliderRow {
             return;
         }
         const src = this._mixer.get_default_source();
-        this.setValue(Math.min(src.volume / this._mixer.get_vol_max_norm(), 1.0));
+        this.setValue(volumeRatio(src, this._mixer.get_vol_max_norm()));
     }
 
     _onChange(v) {
         const src = this._mixer?.get_default_source();
-        if (!src) return;
-        src.volume = v * this._mixer.get_vol_max_norm();
-        src.push_volume();
-        this.setValue(v);
+        if (!src || this._mixer.get_state() !== Gvc.MixerControlState.READY) return;
+        // 麦克风没有独立静音按钮，调音量不应意外解除用户设置的静音
+        setStreamVolume(src, this._mixer.get_vol_max_norm(), v, { unmute: false });
     }
 }
 
