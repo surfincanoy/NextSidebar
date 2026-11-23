@@ -184,13 +184,13 @@ test('setStreamVolume 在静音时先取消静音，再写入音量并推送', (
     assert.equal(stream.pushCount, 1);
 });
 
-test('setStreamVolume 可以保留麦克风原有的静音状态', () => {
+test('静音状态严格跟随音量是否为 0：非 0 即解除静音', () => {
     const stream = makeStream(0, true);
 
-    setStreamVolume(stream, 65536, 0.5, { unmute: false });
+    setStreamVolume(stream, 65536, 0.5);
 
-    assert.equal(stream.is_muted, true);
-    assert.equal(stream.changeMuteCount, 0);
+    assert.equal(stream.is_muted, false);
+    assert.equal(stream.changeMuteCount, 1);
     assert.equal(stream.volume, 32768);
     assert.equal(stream.pushCount, 1);
 });
@@ -216,25 +216,24 @@ test('setStreamVolume 从 0 拉起时解除静音', () => {
     assert.equal(stream.changeMuteCount, 1);
 });
 
-test('麦克风在非 0 处调整时仍保留用户设置的静音', () => {
+test('麦克风在非 0 处调整也会解除静音', () => {
     const stream = makeStream(32768, true);
 
-    setStreamVolume(stream, 65536, 0.6, { unmute: false, unmuteFromZero: true });
+    setStreamVolume(stream, 65536, 0.6);
 
     assert.equal(stream.volume, 39321.6);
-    assert.equal(stream.is_muted, true);
-    assert.equal(stream.changeMuteCount, 0);
+    assert.equal(stream.is_muted, false);
+    assert.equal(stream.changeMuteCount, 1);
 });
 
 test('麦克风降到 0 会静音，从 0 拉起会解除静音', () => {
     const stream = makeStream(32768);
-    const opts = { unmute: false, unmuteFromZero: true };
 
-    setStreamVolume(stream, 65536, 0, opts);
+    setStreamVolume(stream, 65536, 0);
     assert.equal(stream.is_muted, true);
     assert.equal(stream.changeMuteCount, 1);
 
-    setStreamVolume(stream, 65536, 0.5, opts);
+    setStreamVolume(stream, 65536, 0.5);
     assert.equal(stream.is_muted, false);
     assert.equal(stream.changeMuteCount, 2);
     assert.equal(stream.volume, 32768);

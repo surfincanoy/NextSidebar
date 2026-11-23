@@ -323,10 +323,8 @@ class MicRow extends SliderRow {
     _onChange(v) {
         const src = this._mixer?.get_default_source();
         if (!src || this._mixer.get_state() !== Gvc.MixerControlState.READY) return;
-        // 麦克风在非 0 处调整时保留用户设置的静音，只有从 0 拉起才解除
         const ratio = ratioFromFraction(v, this._limit);
-        setStreamVolume(src, this._mixer.get_vol_max_norm(), ratio,
-            { unmute: false, unmuteFromZero: true });
+        setStreamVolume(src, this._mixer.get_vol_max_norm(), ratio);
     }
 
     _updateIcon(ratio, muted) {

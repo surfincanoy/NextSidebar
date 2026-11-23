@@ -49,19 +49,12 @@ export function sliderDisplay(ratio, limit = 1) {
     };
 }
 
-// unmute: 调整音量时是否解除静音（音量行用 true）
-// unmuteFromZero: 麦克风在非 0 处调整时保留静音，只有从 0 拉起才解除
-export function setStreamVolume(stream, maxNorm, ratio,
-    { unmute = true, unmuteFromZero = false } = {}) {
-    const wasZero = stream.volume <= 0;
+// 音量值是唯一真相：0 即静音，非 0 即解除静音。
+export function setStreamVolume(stream, maxNorm, ratio) {
     stream.volume = ratio * maxNorm;
-    if (ratio <= 0) {
-        // 0 即静音，与媒体键把音量降到 0 时的行为一致
-        if (!stream.is_muted)
-            stream.change_is_muted(true);
-    } else if (stream.is_muted && (unmute || (unmuteFromZero && wasZero))) {
-        stream.change_is_muted(false);
-    }
+    const shouldMute = ratio <= 0;
+    if (stream.is_muted !== shouldMute)
+        stream.change_is_muted(shouldMute);
     stream.push_volume();
 }
 
