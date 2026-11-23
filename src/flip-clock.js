@@ -15,7 +15,7 @@ const FLIP_MS = 150;  // 单段翻页时长，两段合计 300ms，在 1 秒 tic
 const GLYPH_NUDGE_Y = 5.5;
 
 // 一个裁剪半片：W×HALF_H 的容器里放完整数字 label，靠 y 偏移只露出上半或下半。
-// 返回的包装对象暴露 easing / rotation / pivot 的直接读写，供 flip 方法体驱动。
+// 返回的包装对象暴露 easing、rotation 写入与 pivot 设置，供 flip 方法体驱动。
 function makeHalf(text, isLower) {
     const box = new St.Widget({
         width: DIGIT_W,
@@ -45,7 +45,6 @@ function makeHalf(text, isLower) {
         set_easing_duration(ms) { box.set_easing_duration(ms); },
         set_easing_mode(mode) { box.set_easing_mode(mode); },
         restore_easing_state() { box.restore_easing_state(); },
-        get rotation_angle_x() { return box.rotation_angle_x; },
         set rotation_angle_x(value) { box.rotation_angle_x = value; },
         // GNOME 51 的 GJS 不再暴露 Clutter.Point 构造器，必须用 actor 方法设置 pivot
         set_pivot_point(x, y) { box.set_pivot_point(x, y); },

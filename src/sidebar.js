@@ -7,12 +7,10 @@ import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 
 import { HoverTrigger } from './hover-trigger.js';
 import {
-    SIDEBAR_WIDTH, EDGE_WIDTH, POSITIONS, normalizePosition,
+    SIDEBAR_WIDTH, EDGE_WIDTH, normalizePosition,
     edgeX, edgeGeometry, shellX, slideInX, shellTranslation, monitorFromRuntime,
     followMonitorChanges,
 } from './sidebar-geometry.js';
-
-export { SIDEBAR_WIDTH, EDGE_WIDTH } from './sidebar-geometry.js';
 
 export const ANIM_DURATION = 250;
 // 边缘触发条：宽 6px、鼠标停留 250ms 弹出；离开侧栏 5 秒后自动收起
@@ -56,10 +54,6 @@ export class Sidebar {
 
     get content() {
         return this._content;
-    }
-
-    get isOpen() {
-        return this._open;
     }
 
     toggle() {

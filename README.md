@@ -9,7 +9,7 @@ GNOME Shell 51 侧栏，默认从右侧滑出，可在设置里改为左侧；�
 - **翻页时钟**：`HH:MM` 四位 24 小时制，用 Clutter actor 属性实现上下半片依次翻转的 3D 翻页；数字中心落在中缝，翻页片静止时隐藏、无中缝残影。不显示秒与 AM/PM。
 - **天气卡**：当前温度、体感、当天高低温与彩色天气图标。城市可切换，见「设置」。
 - **月历**：周一起始，公历数字下方一行小字，今天橙色高亮，非本月日期淡化；年月标题在卡片内水平居中，星期行与日期网格整体居中。第二行小字按 **节日 > 节气 > 农历日** 的优先级显示，节日清单见下表。
-- **滑块**：音量、麦克风、亮度三段，跟随强调色；检测不到麦克风或屏幕背光时对应滑块自动隐藏或显示 N/A。
+- **滑块**：音量、麦克风、亮度三段，跟随强调色；检测不到麦克风或屏幕背光时对应滑块显示 N/A。
 - **玻璃观感**：外壳透明露出壁纸；卡片与滑块格用 18% 强调色半透明底 + 1px 细边框 + 柔和阴影近似玻璃质感（St 的 CSS 引擎不支持背景模糊，无法做真毛玻璃）。滚动条外观隐藏，但滚轮仍可滚动到底。
 
 ### 月历节日清单
@@ -87,7 +87,7 @@ rm -rf ~/.local/share/gnome-shell/extensions/nextsidebar@github.com
 - `src/sliders.js`：音量 / 麦克风 / 亮度滑块与 Gvc 接线。
 - `src/hover-trigger.js`：悬停状态机（边缘停留弹出、离开延时收起、移回取消），不依赖 Shell 运行时。
 - `src/cities.js` / `custom-cities.js` / `timezone.js`：城市表、自定义城市持久化与城市到时区的解析，扩展和设置窗口共用。
-- `src/weather-service.js` / `weather-icons.js` / `weather-theme.js` / `weather-gradient.js`：天气请求与解析、图标映射、昼夜配色；`weather-gradient.js` 已不再接入扩展，仅供测试。
-- `src/calendar-grid.js` / `lunar-date.js` / `solar-term.js` / `holiday.js` / `clock-math.js` / `layout.js` / `extension-paths.js`：日历网格、农历换算、节气换算、节日匹配、时钟数学、布局与资源路径解析等纯逻辑。
+- `src/weather-service.js` / `weather-icons.js` / `weather-theme.js`：天气请求与解析、图标映射、小米天气码分类。
+- `src/calendar-grid.js` / `lunar-date.js` / `solar-term.js` / `holiday.js` / `extension-paths.js`：日历网格、农历换算、节气换算、节日匹配与资源路径解析等纯逻辑。
 - `icons/`：Breezy Weather 彩色天气 PNG，来源固定在 `icons/SOURCES.md`。
 - `schemas/`：GSettings schema，安装时编译为 `gschemas.compiled`。

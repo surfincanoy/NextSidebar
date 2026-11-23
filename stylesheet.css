@@ -51,13 +51,6 @@
     border-radius: 99px;
 }
 
-/* 弱化文字用 opacity，保留层级的同时继续跟随主题前景色 */
-.dw-title {
-    font-size: 12px;
-    font-weight: bold;
-    opacity: 0.62;
-}
-
 .dw-cal-title {
     font-size: 16px;
     font-weight: bold;
@@ -86,11 +79,6 @@
 .dw-cal-lunar {
     font-size: 9px;
     opacity: 0.7;
-}
-
-/* 非本月的农历行：淡化走 JS 的 actor.opacity（比公历浅，小字才看得清）；St 不支持 CSS opacity */
-.dw-cal-lunar-dim {
-    /* 仅作标记类，淡化值在 extension.js::_tickCalendar 中设置 */
 }
 
 /* 今天高亮落在整格容器上，公历与农历两行一起继承白字；仍是唯一保留白字的场景 */
@@ -172,13 +160,12 @@
     border: none;
 }
 
-/* 侧栏滚动内容区：主题条、卡片与滑块竖向排列、等间距 */
+/* 侧栏滚动内容区：卡片与滑块竖向排列、等间距 */
 .next-sidebar-content {
     padding: 16px;
     spacing: 12px;
 }
 
-/* 侧栏顶部主题条：三档按钮，高亮档位用强调色淡底，随系统明暗与强调色变化 */
 /* 滑块组与单格：底色用强调色透明化，跟随系统明暗与强调色 */
 .ns-slider-group {
     spacing: 10px;

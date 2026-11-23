@@ -6,7 +6,6 @@ import Gvc from 'gi://Gvc';
 import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 
 const BAR_H = 6;
-const TRACK_H = 22;
 const RADIUS = 3;
 const THUMB_R = 7;
 
@@ -24,10 +23,6 @@ export class SliderBar {
         this._onChange = onChange ?? (() => {});
         this._signals = [];
         this.actor = this._build();
-    }
-
-    getValue() {
-        return this._value;
     }
 
     setValue(v) {
@@ -326,10 +321,6 @@ export class QuickSliders {
             new BrightnessRow(),
         ];
         for (const row of this._rows) this.actor.add_child(row.actor);
-    }
-
-    refresh() {
-        for (const row of this._rows) row.refresh();
     }
 
     destroy() {

@@ -19,7 +19,7 @@
 | `weather_rain.png` | `weather_rain.png` | 雨 |
 | `weather_snow.png` | `weather_snow.png` | 雪 |
 | `weather_thunderstorm.png` | `weather_thunderstorm.png` | 雷暴 |
-| `weather_hail.png` | `weather_hail.png` | 冰雹（预留） |
-| `weather_haze.png` | `weather_haze.png` | 霾（预留） |
+| `weather_hail.png` | `weather_hail.png` | 冰雹 |
+| `weather_haze.png` | `weather_haze.png` | 霾 |
 
 图标原始尺寸 256×256，运行时由 `St.TextureCache` 缩放到 56×56 显示。

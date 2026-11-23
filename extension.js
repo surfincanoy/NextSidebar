@@ -173,7 +173,6 @@ export default class NextSidebarExtension extends Extension {
             this._weatherIconBox.destroy();
             this._weatherIconBox = null;
         }
-        this._flipClock = null;
         this._calTitle = null;
         this._weatherTemp = null;
         this._weatherCondition = null;
@@ -322,8 +321,7 @@ export default class NextSidebarExtension extends Extension {
 
                 // 第二行小字优先级：节日 > 节气 > 农历日；样式与淡化规则不变
                 const subLabel = c.holiday ?? c.solarTerm ?? c.lunar;
-                const lunarCls = !c.isCurrentMonth ? 'dw-cal-lunar dw-cal-lunar-dim' : 'dw-cal-lunar';
-                const lunarLabel = label(subLabel, lunarCls, { width: 40 });
+                const lunarLabel = label(subLabel, 'dw-cal-lunar', { width: 40 });
                 // 农历小字更小，淡化比公历浅一些（0.45），否则会看不清
                 if (!c.isCurrentMonth) lunarLabel.opacity = Math.round(0.45 * 255);
                 lunarLabel.clutter_text.x_align = Clutter.ActorAlign.CENTER;
@@ -457,7 +455,7 @@ export default class NextSidebarExtension extends Extension {
             if (typeof data.code !== 'string' || !this._weatherTemp) return;
             const cat = categoryFromXiaomi(data.code);
 
-            this._weatherCondition.text = CATEGORY_LABEL[cat] ?? '阴';
+            this._weatherCondition.text = CATEGORY_LABEL[cat];
             this._weatherTemp.text = numberText(data.temperature);
             this._weatherFeels.text = numberText(data.apparent);
             this._weatherRangeNight.text = numberText(data.dayLow);
