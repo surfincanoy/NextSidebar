@@ -3,8 +3,18 @@
 import St from 'gi://St';
 import Clutter from 'gi://Clutter';
 import Gvc from 'gi://Gvc';
+import Gio from 'gi://Gio';
 import * as Main from 'resource:///org/gnome/shell/ui/main.js';
-import { volumeRatio, setStreamVolume, watchDefaultStream } from './audio-stream.js';
+import {
+    volumeLimit,
+    volumeRatio,
+    volumeIconName,
+    micIconName,
+    sliderDisplay,
+    ratioFromFraction,
+    setStreamVolume,
+    watchDefaultStream,
+} from './audio-stream.js';
 
 const BAR_H = 6;
 const RADIUS = 3;
@@ -150,11 +160,13 @@ class SliderRow {
         this.actor.add_child(this._slider.actor);
     }
 
-    setValue(v, muted = false) {
-        const ratio = Math.max(0, Math.min(1, v));
-        this._slider.setValue(ratio);
-        this._perc.text = `${Math.round(ratio * 100)}%`;
-        this._updateIcon(ratio, muted);
+    // v 是相对 100% 的音量比；limit 是当前系统上限。滑块位置按 limit 归一化，
+    // 百分比标签仍显示真实音量，所以允许放大时可以看到 100% 以上。
+    setValue(v, muted = false, limit = 1, iconRatio = v) {
+        const { fraction, percent } = sliderDisplay(v, limit);
+        this._slider.setValue(fraction);
+        this._perc.text = `${percent}%`;
+        this._updateIcon(iconRatio, muted);
     }
 
     setUnavailable() {
@@ -196,9 +208,12 @@ class SliderRow {
 }
 
 class VolumeRow extends SliderRow {
-    constructor(mixer) {
+    constructor(mixer, soundSettings) {
         super({ iconName: 'audio-volume-medium-symbolic', title: '音量' });
         this._mixer = mixer;
+        this._soundSettings = soundSettings;
+        this._limit = 1;
+        this._updateLimit();
         this._watch = watchDefaultStream(
             mixer,
             'default-sink-changed',
@@ -206,12 +221,28 @@ class VolumeRow extends SliderRow {
                 ? mixer.get_default_sink() : null,
             () => this.refresh()
         );
-        this._connect(mixer, 'state-changed', () => this._watch.sync());
+        this._connect(soundSettings, 'changed::allow-volume-above-100-percent', () => {
+            this._updateLimit();
+            this.refresh();
+        });
+        this._connect(mixer, 'state-changed', () => {
+            this._updateLimit();
+            this._watch.sync();
+        });
     }
 
     destroy() {
         this._watch.dispose();
         super.destroy();
+    }
+
+    // 与 gsd-media-keys / GNOME Shell 一样读同一个 GSettings key，取 GVC 的放大上限
+    _updateLimit() {
+        this._limit = volumeLimit(
+            this._mixer.get_vol_max_norm(),
+            this._mixer.get_vol_max_amplified(),
+            this._soundSettings.get_boolean('allow-volume-above-100-percent')
+        );
     }
 
     refresh() {
@@ -221,30 +252,32 @@ class VolumeRow extends SliderRow {
             return;
         }
         const sink = this._mixer.get_default_sink();
-        this.setValue(volumeRatio(sink, this._mixer.get_vol_max_norm()), sink.is_muted);
+        const maxNorm = this._mixer.get_vol_max_norm();
+        const ratio = volumeRatio(sink, maxNorm, this._limit);
+        // 图标按未裁剪的真实音量选，和系统菜单一样能反映残留的 >100% 音量
+        this.setValue(ratio, sink.is_muted, this._limit, sink.volume / maxNorm);
     }
 
     _onChange(v) {
         const sink = this._mixer?.get_default_sink();
         if (!sink || this._mixer.get_state() !== Gvc.MixerControlState.READY) return;
-        setStreamVolume(sink, this._mixer.get_vol_max_norm(), v);
+        const ratio = ratioFromFraction(v, this._limit);
+        setStreamVolume(sink, this._mixer.get_vol_max_norm(), ratio);
         // 不在这里本地改 UI：流音量变化通知会回调 refresh()，以 PA 回读值为准
     }
 
-    _updateIcon(v, muted) {
-        let name;
-        if (muted || v <= 0) name = 'audio-volume-muted-symbolic';
-        else if (v < 0.33) name = 'audio-volume-low-symbolic';
-        else if (v < 0.66) name = 'audio-volume-medium-symbolic';
-        else name = 'audio-volume-high-symbolic';
-        this._icon.icon_name = name;
+    _updateIcon(ratio, muted) {
+        this._icon.icon_name = volumeIconName(ratio, muted);
     }
 }
 
 class MicRow extends SliderRow {
-    constructor(mixer) {
+    constructor(mixer, soundSettings) {
         super({ iconName: 'audio-input-microphone-symbolic', title: '麦克风' });
         this._mixer = mixer;
+        this._soundSettings = soundSettings;
+        this._limit = 1;
+        this._updateLimit();
         this._watch = watchDefaultStream(
             mixer,
             'default-source-changed',
@@ -252,12 +285,27 @@ class MicRow extends SliderRow {
                 ? mixer.get_default_source() : null,
             () => this.refresh()
         );
-        this._connect(mixer, 'state-changed', () => this._watch.sync());
+        this._connect(soundSettings, 'changed::allow-volume-above-100-percent', () => {
+            this._updateLimit();
+            this.refresh();
+        });
+        this._connect(mixer, 'state-changed', () => {
+            this._updateLimit();
+            this._watch.sync();
+        });
     }
 
     destroy() {
         this._watch.dispose();
         super.destroy();
+    }
+
+    _updateLimit() {
+        this._limit = volumeLimit(
+            this._mixer.get_vol_max_norm(),
+            this._mixer.get_vol_max_amplified(),
+            this._soundSettings.get_boolean('allow-volume-above-100-percent')
+        );
     }
 
     refresh() {
@@ -267,14 +315,22 @@ class MicRow extends SliderRow {
             return;
         }
         const src = this._mixer.get_default_source();
-        this.setValue(volumeRatio(src, this._mixer.get_vol_max_norm()));
+        const maxNorm = this._mixer.get_vol_max_norm();
+        const ratio = volumeRatio(src, maxNorm, this._limit);
+        this.setValue(ratio, src.is_muted, this._limit, src.volume / maxNorm);
     }
 
     _onChange(v) {
         const src = this._mixer?.get_default_source();
         if (!src || this._mixer.get_state() !== Gvc.MixerControlState.READY) return;
-        // 麦克风没有独立静音按钮，调音量不应意外解除用户设置的静音
-        setStreamVolume(src, this._mixer.get_vol_max_norm(), v, { unmute: false });
+        // 麦克风在非 0 处调整时保留用户设置的静音，只有从 0 拉起才解除
+        const ratio = ratioFromFraction(v, this._limit);
+        setStreamVolume(src, this._mixer.get_vol_max_norm(), ratio,
+            { unmute: false, unmuteFromZero: true });
+    }
+
+    _updateIcon(ratio, muted) {
+        this._icon.icon_name = micIconName(ratio, muted);
     }
 }
 
@@ -333,9 +389,11 @@ export class QuickSliders {
         });
         this._mixer = new Gvc.MixerControl({ name: 'NextSidebar' });
         this._mixer.open();
+        // 与媒体键 / GNOME Shell 共用同一个 key，决定音量上限是否为 150%
+        this._soundSettings = new Gio.Settings({ schema_id: 'org.gnome.desktop.sound' });
         this._rows = [
-            new VolumeRow(this._mixer),
-            new MicRow(this._mixer),
+            new VolumeRow(this._mixer, this._soundSettings),
+            new MicRow(this._mixer, this._soundSettings),
             new BrightnessRow(),
         ];
         for (const row of this._rows) this.actor.add_child(row.actor);
@@ -348,6 +406,7 @@ export class QuickSliders {
             this._mixer.close();
             this._mixer = null;
         }
+        this._soundSettings = null;
         if (this.actor) {
             this.actor.destroy();
             this.actor = null;
