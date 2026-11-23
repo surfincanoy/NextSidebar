@@ -3,6 +3,7 @@
 set -euo pipefail
 cd "$(dirname "$0")"
 DEST="$HOME/.local/share/gnome-shell/extensions/nextsidebar@github.com"
+rm -rf "$DEST/src"
 mkdir -p "$DEST/src" "$DEST/schemas"
 cp extension.js prefs.js metadata.json stylesheet.css "$DEST/"
 cp src/*.js "$DEST/src/"
