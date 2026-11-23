@@ -11,6 +11,7 @@ import {
     volumeIconName,
     micIconName,
     sliderDisplay,
+    sliderDisabled,
     ratioFromFraction,
     setStreamVolume,
     watchDefaultStream,
@@ -31,9 +32,20 @@ export class SliderBar {
     constructor({ onChange } = {}) {
         this._value = 0;
         this._dragging = false;
+        this._enabled = true;
         this._onChange = onChange ?? (() => {});
         this._signals = [];
         this.actor = this._build();
+    }
+
+    setEnabled(enabled) {
+        this._enabled = enabled;
+        if (!enabled)
+            this._dragging = false;
+        if (enabled)
+            this.actor.remove_style_class_name('ns-slider-disabled');
+        else
+            this.actor.add_style_class_name('ns-slider-disabled');
     }
 
     setValue(v) {
@@ -124,6 +136,7 @@ export class SliderBar {
     }
 
     _onPress(event) {
+        if (!this._enabled) return Clutter.EVENT_PROPAGATE;
         this._dragging = true;
         const val = this._valueFromEvent(event);
         this.setValue(val);
@@ -132,7 +145,7 @@ export class SliderBar {
     }
 
     _onMotion(event) {
-        if (!this._dragging) return Clutter.EVENT_PROPAGATE;
+        if (!this._enabled || !this._dragging) return Clutter.EVENT_PROPAGATE;
         const val = this._valueFromEvent(event);
         this.setValue(val);
         this._onChange(val);
@@ -169,8 +182,13 @@ class SliderRow {
         this._updateIcon(iconRatio, muted);
     }
 
+    setDisabled(disabled) {
+        this._slider.setEnabled(!disabled);
+    }
+
     setUnavailable() {
         this._perc.text = 'N/A';
+        this.setDisabled(true);
     }
 
     destroy() {
@@ -254,6 +272,7 @@ class VolumeRow extends SliderRow {
         const sink = this._mixer.get_default_sink();
         const maxNorm = this._mixer.get_vol_max_norm();
         const ratio = volumeRatio(sink, maxNorm, this._limit);
+        this.setDisabled(sliderDisabled(sink.is_muted, sink.volume));
         // 图标按未裁剪的真实音量选，和系统菜单一样能反映残留的 >100% 音量
         this.setValue(ratio, sink.is_muted, this._limit, sink.volume / maxNorm);
     }
@@ -317,6 +336,7 @@ class MicRow extends SliderRow {
         const src = this._mixer.get_default_source();
         const maxNorm = this._mixer.get_vol_max_norm();
         const ratio = volumeRatio(src, maxNorm, this._limit);
+        this.setDisabled(sliderDisabled(src.is_muted, src.volume));
         this.setValue(ratio, src.is_muted, this._limit, src.volume / maxNorm);
     }
 
@@ -365,6 +385,7 @@ class BrightnessRow extends SliderRow {
             return;
         }
         const val = scale.value !== undefined ? scale.value : scale;
+        this.setDisabled(false);
         this.setValue(val);
     }
 

@@ -192,6 +192,11 @@
     font-size: 9pt;
 }
 
+/* 静音键静音时滑块变淡并停止响应，提示需先解除静音 */
+.ns-slider-disabled {
+    opacity: 0.4;
+}
+
 /* Cairo 无法直接读 CSS 颜色，用隐藏 probe 把强调色挂在标准属性上供绘制读取 */
 .ns-slider-track {
     height: 22px;

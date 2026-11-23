@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import {
     volumeLimit,
     volumeRatio,
+    sliderDisabled,
     volumeIconName,
     micIconName,
     sliderFraction,
@@ -173,40 +174,26 @@ test('volumeRatio 把流音量换算并裁剪到 0–1', () => {
     assert.equal(volumeRatio({ volume: 98304 }, 65536), 1);
 });
 
-test('setStreamVolume 在静音时先取消静音，再写入音量并推送', () => {
-    const stream = makeStream(0, true);
-
-    setStreamVolume(stream, 65536, 0.5);
-
-    assert.equal(stream.is_muted, false);
-    assert.equal(stream.changeMuteCount, 1);
-    assert.equal(stream.volume, 32768);
-    assert.equal(stream.pushCount, 1);
+test('静音键静音时禁用滑块，音量 0 时仍可用', () => {
+    assert.equal(sliderDisabled(true, 32768), true);
+    assert.equal(sliderDisabled(true, 65536), true);
+    assert.equal(sliderDisabled(true, 0), false);
+    assert.equal(sliderDisabled(false, 32768), false);
+    assert.equal(sliderDisabled(false, 0), false);
 });
 
-test('静音状态严格跟随音量是否为 0：非 0 即解除静音', () => {
-    const stream = makeStream(0, true);
-
-    setStreamVolume(stream, 65536, 0.5);
-
-    assert.equal(stream.is_muted, false);
-    assert.equal(stream.changeMuteCount, 1);
-    assert.equal(stream.volume, 32768);
-    assert.equal(stream.pushCount, 1);
-});
-
-test('setStreamVolume 把音量降到 0 时同时设为静音', () => {
+test('setStreamVolume 把音量降到 0 时不改静音状态', () => {
     const stream = makeStream(32768);
 
     setStreamVolume(stream, 65536, 0);
 
     assert.equal(stream.volume, 0);
-    assert.equal(stream.is_muted, true);
-    assert.equal(stream.changeMuteCount, 1);
+    assert.equal(stream.is_muted, false);
+    assert.equal(stream.changeMuteCount, 0);
     assert.equal(stream.pushCount, 1);
 });
 
-test('setStreamVolume 从 0 拉起时解除静音', () => {
+test('setStreamVolume 从 0 拉起时解除残留静音', () => {
     const stream = makeStream(0, true);
 
     setStreamVolume(stream, 65536, 0.5);
@@ -216,27 +203,15 @@ test('setStreamVolume 从 0 拉起时解除静音', () => {
     assert.equal(stream.changeMuteCount, 1);
 });
 
-test('麦克风在非 0 处调整也会解除静音', () => {
+test('setStreamVolume 在静音且音量非 0 时只写音量值、不改静音', () => {
+    // 正常路径下滑块已被禁用；这里覆盖外部调用，确保静音不被意外解除
     const stream = makeStream(32768, true);
 
     setStreamVolume(stream, 65536, 0.6);
 
     assert.equal(stream.volume, 39321.6);
-    assert.equal(stream.is_muted, false);
-    assert.equal(stream.changeMuteCount, 1);
-});
-
-test('麦克风降到 0 会静音，从 0 拉起会解除静音', () => {
-    const stream = makeStream(32768);
-
-    setStreamVolume(stream, 65536, 0);
     assert.equal(stream.is_muted, true);
-    assert.equal(stream.changeMuteCount, 1);
-
-    setStreamVolume(stream, 65536, 0.5);
-    assert.equal(stream.is_muted, false);
-    assert.equal(stream.changeMuteCount, 2);
-    assert.equal(stream.volume, 32768);
+    assert.equal(stream.changeMuteCount, 0);
 });
 
 test('重复的 sync 不会造成重复订阅', () => {

@@ -49,12 +49,18 @@ export function sliderDisplay(ratio, limit = 1) {
     };
 }
 
-// 音量值是唯一真相：0 即静音，非 0 即解除静音。
+// 静音键静音（is_muted 且音量仍 >0）时禁用滑块；音量为 0 时仍可拉起。
+export function sliderDisabled(isMuted, volume) {
+    return isMuted && volume > 0;
+}
+
+// 只写音量值：降到 0 不动静音状态（图标由音量比显示静音），
+// 从 0 拉起时顺手清掉可能残留的静音，避免新音量 >0 又被判为静音键静音。
 export function setStreamVolume(stream, maxNorm, ratio) {
+    const wasZero = stream.volume <= 0;
     stream.volume = ratio * maxNorm;
-    const shouldMute = ratio <= 0;
-    if (stream.is_muted !== shouldMute)
-        stream.change_is_muted(shouldMute);
+    if (wasZero && ratio > 0 && stream.is_muted)
+        stream.change_is_muted(false);
     stream.push_volume();
 }
 
