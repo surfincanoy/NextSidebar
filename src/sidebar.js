@@ -222,7 +222,7 @@ export class Sidebar {
         const monitor = this._getMonitor();
         const panelH = Main.panel.height;
         this._shell = new St.BoxLayout({
-            style_class: 'popup-menu-content next-sidebar',
+            style_class: 'popup-menu-content',
             orientation: Clutter.Orientation.VERTICAL,
             reactive: true,
             visible: false,
@@ -231,6 +231,7 @@ export class Sidebar {
             x: shellX(monitor, this._position),
             y: monitor.y + panelH,
         });
+        this._shell.add_style_class_name('next-sidebar');
 
         // 滚动内容区：三卡与滑块竖向排列，超高时可滚动
         const scroll = new St.ScrollView({

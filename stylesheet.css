@@ -1,11 +1,11 @@
 /* NextSidebar：卡片与滑块格用强调色半透明玻璃底——壳透明后壁纸透上来，
-   底色比纯淡底稍实以撑住文字对比度，细边框做玻璃边缘、柔和阴影做悬浮感。
-   St 不支持背景模糊，玻璃质感由这三者近似；不设 color，文字继承主题前景色 */
+   底色比纯淡底稍实以撑住文字对比度，细边框做玻璃边缘。
+   不再用外阴影：10px 模糊会溢出到 12px 的卡片间距里，把间隙糊成一片灰。
+   St 不支持背景模糊，玻璃质感由半透明底与细边框近似；不设 color，文字继承主题前景色 */
 .dw-card {
     border-radius: 20px;
     background-color: st-transparentize(-st-accent-color, 0.82);
     border: 1px solid st-transparentize(-st-accent-color, 0.55);
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.28);
     padding: 16px;
 }
 
@@ -151,13 +151,16 @@
 }
 
 /* 侧栏外壳：保留 popup-menu-content 以继承跟随明暗的前景/文字色，
-   但把底色设为透明，让桌面壁纸透上来；圆角、内边距、阴影、边框全部去掉 */
-.next-sidebar {
+   但主题给这个类上了不透明的 #36363a 底色。用复合选择器提高特异性覆盖它，
+   边缘/间隙才会露出壁纸；边框等用长写法，避免简写在某些 St 版本上失效。 */
+.popup-menu-content.next-sidebar {
     background-color: transparent;
     border-radius: 0;
     padding: 0;
     box-shadow: none;
-    border: none;
+    border-width: 0;
+    border-style: none;
+    border-color: transparent;
 }
 
 /* 侧栏滚动内容区：卡片与滑块竖向排列、等间距 */
@@ -174,7 +177,6 @@
 .ns-slider-section {
     background-color: st-transparentize(-st-accent-color, 0.82);
     border: 1px solid st-transparentize(-st-accent-color, 0.55);
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.28);
     border-radius: 12px;
     padding: 14px 16px;
     spacing: 10px;
