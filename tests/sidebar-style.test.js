@@ -28,6 +28,37 @@ test('卡片和滑块格不使用会溢出到间距的外阴影', () => {
     }
 });
 
+// 白字压在任意壁纸上都要够对比，底板必须从很淡的强调色改成深色半透明
+function darkScrimAlpha(selector) {
+    const rule = css.match(new RegExp(`${selector}\\s*\\{([\\s\\S]*?)\\}`));
+    assert.ok(rule, `缺少 ${selector} 规则`);
+    const match = rule[1].match(/background-color:\s*rgba\(\s*0,\s*0,\s*0,\s*([\d.]+)\s*\)/);
+    assert.ok(match, `${selector} 没有深色半透明底，白字在白壁纸上会看不清`);
+    const alpha = Number(match[1]);
+    assert.ok(alpha >= 0.5, `${selector} 的深色底太淡`);
+    return alpha;
+}
+
+test('卡片、滑块格和翻页页片用深色半透明底托住白字', () => {
+    for (const selector of ['.dw-card', '.ns-slider-section',
+        '.ns-flip-half-upper', '.ns-flip-half-lower']) {
+        darkScrimAlpha(selector);
+    }
+});
+
+test('深色底不过重，保留半透明观感', () => {
+    for (const selector of ['.dw-card', '.ns-slider-section', '.ns-flip-half-upper']) {
+        assert.ok(darkScrimAlpha(selector) <= 0.5, `${selector} 太暗`);
+    }
+});
+
+test('翻页下半片比上半片更深，保留机械翻页的明暗差', () => {
+    const upper = darkScrimAlpha('.ns-flip-half-upper');
+    const lower = darkScrimAlpha('.ns-flip-half-lower');
+
+    assert.ok(lower > upper);
+});
+
 test('外壳仍保留 popup-menu-content 以继承主题前景色', () => {
     const source = readFileSync(join(root, 'src/sidebar.js'), 'utf8');
     assert.match(source, /style_class:\s*'popup-menu-content'/);

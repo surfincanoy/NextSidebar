@@ -21,6 +21,35 @@ export default class NextSidebarPreferences extends ExtensionPreferences {
 
         this._addCityRows(page, settings);
         this._addPositionRows(page, settings);
+        this._addOpacityRows(page, settings);
+    }
+
+    _addOpacityRows(page, settings) {
+        const group = new Adw.PreferencesGroup({
+            title: _('卡片底色'),
+            description: _('调整半透明底板：数值越大白字越清楚，越小越透明'),
+        });
+        page.add(group);
+
+        const row = new Adw.ActionRow({ title: _('不透明度') });
+        const scale = Gtk.Scale.new_with_range(Gtk.Orientation.HORIZONTAL, 0, 100, 1);
+        scale.set_hexpand(true);
+        scale.set_valign(Gtk.Align.CENTER);
+        row.add_suffix(scale);
+        group.add(row);
+
+        let updating = false;
+        const refresh = () => {
+            updating = true;
+            scale.set_value(settings.get_int('card-opacity'));
+            updating = false;
+        };
+        refresh();
+        settings.connect('changed::card-opacity', refresh);
+        scale.connect('value-changed', () => {
+            if (updating) return;
+            settings.set_int('card-opacity', Math.round(scale.get_value()));
+        });
     }
 
     _addCityRows(page, settings) {

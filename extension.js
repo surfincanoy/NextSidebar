@@ -19,6 +19,7 @@ import { QuickSliders } from './src/sliders.js';
 import { presetCity } from './src/cities.js';
 import { addCustomCity } from './src/custom-cities.js';
 import { timezoneForCity, dateTimeParts } from './src/timezone.js';
+import { applyCardOpacity } from './src/card-opacity.js';
 
 const CARD_HEIGHT = 300;
 // 时钟卡片单独用紧凑高度：卡片宽 328px 减 padding 32px = 296px 内部，时钟宽 270px，
@@ -71,6 +72,8 @@ export default class NextSidebarExtension extends Extension {
         this._positionChangedId = this._settings.connect('changed::sidebar-position', () => {
             this._sidebar.setPosition(this._settings.get_string('sidebar-position'));
         });
+        this._opacityChangedId = this._settings.connect('changed::card-opacity',
+            () => this._applyCardOpacity());
         this._clockTimerId = GLib.timeout_add_seconds(GLib.PRIORITY_DEFAULT, 1, () => {
             this._tickClock();
             return GLib.SOURCE_CONTINUE;
@@ -83,6 +86,7 @@ export default class NextSidebarExtension extends Extension {
         this._rebuild();
         this._sliders = new QuickSliders();
         this._sidebar.content.add_child(this._sliders.actor);
+        this._applyCardOpacity();
         this._registerKeybinding();
         this._tickClock();
         this._fetchWeather();
@@ -121,6 +125,10 @@ export default class NextSidebarExtension extends Extension {
         if (this._positionChangedId) {
             this._settings.disconnect(this._positionChangedId);
             this._positionChangedId = 0;
+        }
+        if (this._opacityChangedId) {
+            this._settings.disconnect(this._opacityChangedId);
+            this._opacityChangedId = 0;
         }
         this._settings = null;
         if (this._stylesheet) {
@@ -195,6 +203,10 @@ export default class NextSidebarExtension extends Extension {
         return dateTimeParts(GLib.DateTime.new_now(this._timezone ?? GLib.TimeZone.new_local()));
     }
 
+    _applyCardOpacity() {
+        applyCardOpacity(this._container, this._settings?.get_int('card-opacity'));
+    }
+
     _rebuild() {
         // 先释放卡片内的活动对象（翻页定时器、子 actor），再销毁旧卡片容器。
         // 侧栏 content 是长期存在的容器，卡片本身随重建被替换。
@@ -216,6 +228,7 @@ export default class NextSidebarExtension extends Extension {
         if (this._sliders?.actor)
             this._container.set_child_above_sibling(this._sliders.actor, null);
 
+        this._applyCardOpacity();
         this._tickClock();
     }
 

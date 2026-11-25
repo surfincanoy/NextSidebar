@@ -1,10 +1,11 @@
-/* NextSidebar：卡片与滑块格用强调色半透明玻璃底——壳透明后壁纸透上来，
-   底色比纯淡底稍实以撑住文字对比度，细边框做玻璃边缘。
+/* NextSidebar：外壳与间隙全透明，卡片/滑块格内部用深色半透明底托住白字——
+   否则白壁纸上的白字完全看不清；此处是默认值，设置里的「卡片底色不透明度」
+   会按 card-opacity 实时覆盖为 inline style；细边框继续用强调色做玻璃边缘。
    不再用外阴影：10px 模糊会溢出到 12px 的卡片间距里，把间隙糊成一片灰。
-   St 不支持背景模糊，玻璃质感由半透明底与细边框近似；不设 color，文字继承主题前景色 */
+   St 不支持背景模糊，玻璃质感由深色半透明底与强调色细边框近似 */
 .dw-card {
     border-radius: 20px;
-    background-color: st-transparentize(-st-accent-color, 0.82);
+    background-color: rgba(0, 0, 0, 0.5);
     border: 1px solid st-transparentize(-st-accent-color, 0.55);
     padding: 16px;
 }
@@ -25,15 +26,15 @@
     font-size: 64px;
 }
 
-/* 翻页页片实体底色：上半稍亮、下半稍暗，强调色派生跟随明暗与强调色，
-   数字继承前景色叠在底上，才有「页片」而非「透明背景上的字」的感觉 */
+/* 翻页页片实体底色：上半稍亮、下半稍暗的深色半透明，数字是白字，
+   底板必须够深才能在白壁纸上读清；明暗差保留「页片」而非「透明背景上的字」的感觉 */
 .ns-flip-half-upper {
-    background-color: st-transparentize(-st-accent-color, 0.8);
+    background-color: rgba(0, 0, 0, 0.5);
     border-radius: 6px 6px 0 0;
 }
 
 .ns-flip-half-lower {
-    background-color: st-transparentize(-st-accent-color, 0.88);
+    background-color: rgba(0, 0, 0, 0.57);
     border-radius: 0 0 6px 6px;
 }
 
@@ -169,13 +170,13 @@
     spacing: 12px;
 }
 
-/* 滑块组与单格：底色用强调色透明化，跟随系统明暗与强调色 */
+/* 滑块组与单格：单格用深色半透明底托住白字，边框保留强调色 */
 .ns-slider-group {
     spacing: 10px;
 }
 
 .ns-slider-section {
-    background-color: st-transparentize(-st-accent-color, 0.82);
+    background-color: rgba(0, 0, 0, 0.5);
     border: 1px solid st-transparentize(-st-accent-color, 0.55);
     border-radius: 12px;
     padding: 14px 16px;

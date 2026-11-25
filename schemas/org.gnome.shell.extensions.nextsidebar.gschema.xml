@@ -36,6 +36,12 @@
       <summary>城市名称</summary>
       <description>天气查询的城市，预设城市同时决定时钟时区。</description>
     </key>
+    <key name="card-opacity" type="i">
+      <default>50</default>
+      <range min="0" max="100"/>
+      <summary>卡片底色不透明度（百分比）</summary>
+      <description>卡片、翻页页片与滑块格的深色半透明底板浓度；越大白字越清楚，越小越透明。</description>
+    </key>
     <key name="custom-cities" type="as">
       <default>[]</default>
       <summary>自定义城市</summary>
