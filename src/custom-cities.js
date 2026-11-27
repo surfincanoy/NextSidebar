@@ -17,7 +17,6 @@ export function parseCustomCities(strings) {
                 affiliation: typeof item.affiliation === 'string' ? item.affiliation : '',
             });
         } catch (e) {
-            // 跳过非法 JSON 条目
         }
     }
     return result;

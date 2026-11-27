@@ -11,18 +11,16 @@ export class HoverTrigger {
         this._dwellId = null;
         this._hideId = null;
         this._edgeInside = false;
-        this._destroyed = false;
     }
 
     // 进入右边缘触发条：停留满 dwellMs 后弹出；侧栏已打开时忽略，不碰收起倒计时
     edgeEnter(isOpen) {
-        if (this._destroyed || this._edgeInside) return;
+        if (this._edgeInside) return;
         this._edgeInside = true;
         if (isOpen) return;
         this._cancelDwell();
         this._dwellId = this._schedule(() => {
             this._dwellId = null;
-            if (this._destroyed) return;
             this._onOpen();
         }, this._dwellMs);
     }
@@ -40,11 +38,9 @@ export class HoverTrigger {
 
     // 离开侧栏：重新开始 hideMs 倒计时
     panelLeave() {
-        if (this._destroyed) return;
         this._cancelHide();
         this._hideId = this._schedule(() => {
             this._hideId = null;
-            if (this._destroyed) return;
             this._onClose();
         }, this._hideMs);
     }
@@ -56,7 +52,6 @@ export class HoverTrigger {
     }
 
     destroy() {
-        this._destroyed = true;
         this.cancelAll();
     }
 

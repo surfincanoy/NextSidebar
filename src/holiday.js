@@ -27,7 +27,6 @@ const LUNAR_HOLIDAYS = {
     '9-9': '重阳',
 };
 
-// 返回公历日期对应的节日名，非节日返回 null。
 export function holidayForDate(year, month, day) {
     const gregorian = GREGORIAN_HOLIDAYS[`${month}-${day}`];
     if (gregorian) {

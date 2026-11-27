@@ -270,6 +270,19 @@ test('切换流后 dispose 断开的是当前流', () => {
     assert.equal(updates, 1);
 });
 
+test('dispose 不吞掉 disconnect 抛出的异常', () => {
+    const stream = makeStream(32768);
+    const mixer = makeMixer(stream);
+    const watch = watchDefaultStream(
+        mixer, 'default-sink-changed', () => mixer.get_default_sink(), () => {}
+    );
+    stream.disconnect = () => {
+        throw new Error('disconnect failed');
+    };
+
+    assert.throws(() => watch.dispose(), /disconnect failed/);
+});
+
 test('dispose 可以重复调用而不抛错', () => {
     const stream = makeStream(32768);
     const mixer = makeMixer(stream);

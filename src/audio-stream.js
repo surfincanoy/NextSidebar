@@ -31,12 +31,10 @@ export function micIconName(ratio, muted) {
     return 'audio-input-microphone-symbolic';
 }
 
-// 0..limit 的音量比映射到滑块的 0..1 位置
 export function sliderFraction(ratio, limit) {
     return Math.max(0, Math.min(ratio / limit, 1));
 }
 
-// 滑块的 0..1 位置映射回 0..limit 的目标音量比
 export function ratioFromFraction(fraction, limit) {
     return Math.max(0, Math.min(fraction, 1)) * limit;
 }
@@ -72,13 +70,8 @@ export function watchDefaultStream(mixer, changedSignal, getStream, onUpdate) {
     const streamIds = [];
 
     function unbind() {
-        for (const [obj, id] of streamIds) {
-            try {
-                obj.disconnect(id);
-            } catch (e) {
-                // 流可能已被 Gvc 提前销毁，忽略失效的 signal id
-            }
-        }
+        for (const [obj, id] of streamIds)
+            obj.disconnect(id);
         streamIds.length = 0;
         stream = null;
     }
@@ -108,11 +101,7 @@ export function watchDefaultStream(mixer, changedSignal, getStream, onUpdate) {
             if (disposed)
                 return;
             disposed = true;
-            try {
-                mixer.disconnect(mixerId);
-            } catch (e) {
-                // mixer 已关闭时忽略
-            }
+            mixer.disconnect(mixerId);
             unbind();
         },
     };

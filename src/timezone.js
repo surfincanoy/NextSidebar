@@ -16,7 +16,6 @@ export function timezoneForCity(city, customCityStrings) {
     return null;
 }
 
-/** 把 GLib.DateTime 拆成表盘指针与日历都用的字段。 */
 export function dateTimeParts(dt) {
     return {
         year: dt.get_year(),

@@ -54,9 +54,8 @@ export class SliderBar {
     }
 
     destroy() {
-        for (const [obj, id] of this._signals) {
-            try { obj.disconnect(id); } catch (e) { /* actor 已销毁时忽略 */ }
-        }
+        for (const [obj, id] of this._signals)
+            obj.disconnect(id);
         this._signals = [];
         if (this.actor) {
             this.actor.destroy();
@@ -193,9 +192,8 @@ class SliderRow {
 
     destroy() {
         // 先断开外部对象（如 MixerControl）上的信号，再销毁本行持有的 actor
-        for (const [obj, id] of this._signals ?? []) {
-            try { obj.disconnect(id); } catch (e) { /* 忽略已销毁对象 */ }
-        }
+        for (const [obj, id] of this._signals ?? [])
+            obj.disconnect(id);
         this._signals = [];
         if (this._slider) {
             this._slider.destroy();
@@ -220,9 +218,9 @@ class SliderRow {
         this._signals.push([obj, obj.connect(signal, handler)]);
     }
 
-    _onChange(/* v */) {}
+    _onChange() {}
 
-    _updateIcon(/* v, muted */) {}
+    _updateIcon() {}
 }
 
 class VolumeRow extends SliderRow {

@@ -18,7 +18,6 @@ export function applyCardOpacity(root, percent) {
     if (!root) return;
 
     const visit = actor => {
-        if (!actor || typeof actor.has_style_class_name !== 'function') return;
         if (actor.has_style_class_name('ns-flip-half-lower'))
             actor.set_style(scrimStyle(percent, true));
         else if (actor.has_style_class_name('dw-card') ||

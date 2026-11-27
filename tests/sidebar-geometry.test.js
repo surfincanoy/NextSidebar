@@ -80,15 +80,21 @@ test('显示器几何按运行时优先级读取，全部拿不到再兜底', ()
     }, fallback), secondRect);
     assert.deepEqual(monitorFromRuntime({ primaryMonitor: null, monitors: [] }, {
         get_primary_monitor: () => 1,
-        get_monitor_geometry: (index) => {
-            if (index === 1)
-                throw new Error('bad index');
-            return index === 0 ? displayRect : null;
-        },
+        get_monitor_geometry: (index) => (index === 0 ? displayRect : null),
     }, fallback), displayRect);
 });
 
-test('显示器 API 异常时不崩溃，回退到兜底几何', () => {
+test('显示器几何返回 null 时回退到兜底几何', () => {
+    const fallback = { x: 0, y: 0, width: 1920, height: 1080 };
+    const emptyDisplay = {
+        get_primary_monitor: () => -1,
+        get_monitor_geometry: () => null,
+    };
+
+    assert.deepEqual(monitorFromRuntime({ primaryMonitor: null, monitors: [] }, emptyDisplay, fallback), fallback);
+});
+
+test('显示器 API 抛错时不再吞掉异常', () => {
     const fallback = { x: 0, y: 0, width: 1920, height: 1080 };
     const brokenDisplay = {
         get_primary_monitor: () => {
@@ -99,7 +105,8 @@ test('显示器 API 异常时不崩溃，回退到兜底几何', () => {
         },
     };
 
-    assert.deepEqual(monitorFromRuntime({ primaryMonitor: null, monitors: [] }, brokenDisplay, fallback), fallback);
+    assert.throws(() => monitorFromRuntime({ primaryMonitor: null, monitors: [] }, brokenDisplay, fallback),
+        /no display/);
 });
 
 test('显示器几何坐标非有限值时跳过', () => {

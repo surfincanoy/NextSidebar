@@ -47,23 +47,13 @@ function normalizeRect(rect) {
 }
 
 function displayGeometry(display, index) {
-    try {
-        return normalizeRect(display.get_monitor_geometry(index));
-    } catch (e) {
-        // 无效索引或显示器尚未就绪时继续尝试 0 号
-        return null;
-    }
+    return normalizeRect(display.get_monitor_geometry(index));
 }
 
 function geometryFromDisplay(display) {
-    try {
-        const index = display.get_primary_monitor();
-        const primaryIndex = index >= 0 ? index : 0;
-        return displayGeometry(display, primaryIndex) ?? displayGeometry(display, 0);
-    } catch (e) {
-        // 启动早期 Meta.Display 可能尚未就绪，交给硬编码兜底几何
-        return null;
-    }
+    const index = display.get_primary_monitor();
+    const primaryIndex = index >= 0 ? index : 0;
+    return displayGeometry(display, primaryIndex) ?? displayGeometry(display, 0);
 }
 
 // 运行时按优先级取真实显示器几何：layoutManager 主显示器 → 第一块显示器 →

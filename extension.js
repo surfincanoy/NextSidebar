@@ -216,7 +216,6 @@ export default class NextSidebarExtension extends Extension {
             if (card) card.destroy();
         }
 
-        // 自上而下：时钟 → 天气 → 月历
         if (this._settings.get_boolean('show-clock'))
             this._buildClockCard();
         if (this._settings.get_boolean('show-weather'))
@@ -312,7 +311,6 @@ export default class NextSidebarExtension extends Extension {
             const row = new St.BoxLayout({ orientation: Clutter.Orientation.HORIZONTAL, reactive: false });
             for (let j = 0; j < 7; j++) {
                 const c = cells[i + j];
-                // 每格是竖向盒：公历数字在上，农历小字在下
                 const cell = new St.BoxLayout({
                     orientation: Clutter.Orientation.VERTICAL,
                     width: 40,
@@ -360,7 +358,6 @@ export default class NextSidebarExtension extends Extension {
         });
         content.add_child(new St.Widget({ y_expand: true }));
 
-        // 顶部：彩色图标 + 当日天气状况
         const header = new St.BoxLayout({
             orientation: Clutter.Orientation.HORIZONTAL,
             x_align: Clutter.ActorAlign.CENTER,
@@ -377,7 +374,6 @@ export default class NextSidebarExtension extends Extension {
         header.add_child(this._weatherCondition);
         content.add_child(header);
 
-        // 当前温度 / 体感温度 / 晚间与白天高低温（同一行）
         const tempRow = new St.BoxLayout({
             orientation: Clutter.Orientation.HORIZONTAL,
             x_align: Clutter.ActorAlign.CENTER,
@@ -391,7 +387,6 @@ export default class NextSidebarExtension extends Extension {
         tempRow.add_child(this._weatherTemp);
         tempRow.add_child(this._weatherUnit);
 
-        // 体感：体感 + 数字 + 上标 °C
         const feelsRow = new St.BoxLayout({
             orientation: Clutter.Orientation.HORIZONTAL,
             x_align: Clutter.ActorAlign.CENTER,
@@ -404,7 +399,6 @@ export default class NextSidebarExtension extends Extension {
             y_align: Clutter.ActorAlign.START,
         }));
 
-        // 晚间 / 白天高低温：各带一个上标 °C，整行居中
         const rangeRow = new St.BoxLayout({
             orientation: Clutter.Orientation.HORIZONTAL,
             x_align: Clutter.ActorAlign.CENTER,

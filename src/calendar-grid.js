@@ -13,13 +13,11 @@ export const WEEKDAYS = ['一', '二', '三', '四', '五', '六', '日'];
  * @returns {{cells: Array, weekdays: string[]}} cells 每格含 year/month/day/lunar/solarTerm/holiday/isCurrentMonth/isToday
  */
 export function buildMonthGrid(year, month, today = null) {
-    // getDay() 0=周日，换算成周一=0 的偏移
     const firstWeekday = new Date(year, month - 1, 1).getDay();
     const offset = (firstWeekday + 6) % 7;
     const daysInMonth = new Date(year, month, 0).getDate();
     const daysInPrevMonth = new Date(year, month - 1, 0).getDate();
 
-    // 补齐到完整周数
     const totalCells = Math.ceil((offset + daysInMonth) / 7) * 7;
     const cells = [];
     for (let i = 0; i < totalCells; i++) {
