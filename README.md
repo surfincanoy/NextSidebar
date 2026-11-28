@@ -77,21 +77,3 @@ rm -rf ~/.local/share/gnome-shell/extensions/nextsidebar@github.com
 ## 许可证
 
 本扩展以 GPL-3.0 发布，见 `LICENSE`。天气图标来自 Breezy Weather（LGPL-3.0），来源与归属见 `icons/SOURCES.md`。
-
-## 文件
-
-- `extension.js`：扩展入口，侧栏挂载、三卡 UI、设置接线、快捷键与主题重挂。
-- `prefs.js`：GNOME 扩展设置窗口（GTK4 + libadwaita），侧边栏位置与城市设置。
-- `stylesheet.css`：卡片玻璃底、侧栏外壳、滑块与日历样式。
-- `install.sh`：安装脚本，复制运行必需文件到用户扩展目录并编译 schema。
-- `src/sidebar.js`：按设置从左 / 右边缘滑出的侧栏容器（chrome 挂载、滑入动画、滚动内容区、对应边缘中段触发条、离开自动收起）。
-- `src/sidebar-geometry.js`：位置归一化、主显示器几何获取（layoutManager → Meta.Display → 兜底）与中段触发条计算，不依赖 Shell 运行时。
-- `tests/`：纯逻辑回归测试（`node --test`），仅用于源码开发，安装时不复制。
-- `src/flip-clock.js` / `src/flip-clock-digits.js`：翻页时钟的 St/Clutter 组件与纯数字决策。
-- `src/sliders.js`：音量 / 麦克风 / 亮度滑块与 Gvc 接线。
-- `src/hover-trigger.js`：悬停状态机（边缘停留弹出、离开延时收起、移回取消），不依赖 Shell 运行时。
-- `src/cities.js` / `custom-cities.js` / `timezone.js`：城市表、自定义城市持久化与城市到时区的解析，扩展和设置窗口共用。
-- `src/weather-service.js` / `weather-icons.js` / `weather-theme.js`：天气请求与解析、图标映射、小米天气码分类。
-- `src/calendar-grid.js` / `lunar-date.js` / `solar-term.js` / `holiday.js` / `extension-paths.js`：日历网格、农历换算、节气换算、节日匹配与资源路径解析等纯逻辑。
-- `icons/`：Breezy Weather 彩色天气 PNG，来源固定在 `icons/SOURCES.md`。
-- `schemas/`：GSettings schema，安装时编译为 `gschemas.compiled`。
