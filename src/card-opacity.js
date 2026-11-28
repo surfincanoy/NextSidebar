@@ -18,6 +18,9 @@ export function applyCardOpacity(root, percent) {
     if (!root) return;
 
     const visit = actor => {
+        // 天气图标来自 St.TextureCache，是 Clutter.Actor 而非 St.Widget，没有样式方法
+        if (!actor?.has_style_class_name)
+            return;
         if (actor.has_style_class_name('ns-flip-half-lower'))
             actor.set_style(scrimStyle(percent, true));
         else if (actor.has_style_class_name('dw-card') ||

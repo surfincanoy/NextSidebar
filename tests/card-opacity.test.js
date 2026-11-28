@@ -68,6 +68,17 @@ test('applyCardOpacity 递归作用于卡片、页片和滑块格', () => {
     assert.equal(nestedCard.style, 'background-color: rgba(0, 0, 0, 0.4)');
 });
 
+test('非 St.Widget 的子 actor 不中断底板应用', () => {
+    const card = makeActor(['dw-card']);
+    // 天气图标是 St.TextureCache 返回的 Clutter.Actor，没有 has_style_class_name
+    const texture = { get_children: () => [] };
+    const root = makeActor(['next-sidebar-content']);
+    root.children.push(texture, card);
+
+    assert.doesNotThrow(() => applyCardOpacity(root, 50));
+    assert.equal(card.style, 'background-color: rgba(0, 0, 0, 0.5)');
+});
+
 test('schema 提供 card-opacity 键，默认 50、范围 0..100', () => {
     const xml = readFileSync(join(root, 'schemas/org.gnome.shell.extensions.nextsidebar.gschema.xml'), 'utf8');
     const key = xml.match(/<key name="card-opacity"[\s\S]*?<\/key>/);
